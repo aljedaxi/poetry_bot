@@ -1,0 +1,3 @@
+[submodule "pyrhyme"]
+	path = pyrhyme
+	url = https://github.com/fathat/pyrhyme
