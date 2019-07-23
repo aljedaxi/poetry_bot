@@ -2,7 +2,6 @@ import random
 from random import randrange
 from pyrhyme.rhyme import rhymes_with
 
-#TODO: give a binary string and return the set of rhythms that can be used for each line
 #TODO: alliterative interface
 
 BALLAD_RHYTHM = (
@@ -20,7 +19,7 @@ RHYTHMS = (
     ("1" , "001"),
     ("1" , "1", "01"),
     ("10", "1", "1"),
-    #("1" , "0", "01"), #TODO: distinguish between strong and weak 1 syllable words?
+    #("1" , "0", "01"), 
     #("10", "0", "1"),
 )
 
@@ -38,7 +37,7 @@ RHYTHMIZER_ERROR = "something is getting stuck in the rhythmizer. at the time of
 ROSES_LENGTH = 4
 POEM_LENGTH = 4
 SONNET_LENGTH = 14
-#only have word lists for 3 syllable words
+#only have word lists for >= 3 syllable words
 MAX_WORD_LENGTH = 3
 
 def rhythmizer(rhythm, max_word_length=MAX_WORD_LENGTH):
@@ -58,7 +57,7 @@ def rhythmizer(rhythm, max_word_length=MAX_WORD_LENGTH):
             slices.append(rhythm_slice)
             i += slice_size
         elif rhythm_slice == "0":
-            #TODO: implement strong single syllable words
+            #TODO: implement weak single syllable words
             slices.append("1")
             i += slice_size
         else:
@@ -117,12 +116,14 @@ def main(
     rhymes_schemed = {}
 
     for line in range(poem_length):
-        #rhythm = rhythms[random.randrange(len(rhythms))]
+        rhymed = False
+        line_data = {}
         try:
-            poem.append(lines[line])
+            line_data["line"] = lines[line]
+            line_data["last_word"] = line_data["line"].split()[-1]
         except:
-            rhymed = False
             try:
+                #get the rhyme
                 rhyme = rhymes_schemed[rhyme_scheme[line]]
                 rhymed = True
             except KeyError:
@@ -132,9 +133,13 @@ def main(
                 line_data = gen_line(rhythms[line], rhyme=rhyme)
             else:
                 line_data = gen_line(rhythms[line], rhyme=None)
-                rhymes_schemed[rhyme_scheme[line]] = line_data["last_word"]
-
-            poem.append(line_data["line"])
+        finally:
+            if not rhymed:
+                try:
+                    rhymes_schemed[rhyme_scheme[line]] = line_data["last_word"]
+                except KeyError:
+                    pass
+        poem.append(line_data["line"])
 
     return "\n".join(poem)
 
@@ -142,8 +147,8 @@ def main(
 if __name__ == "__main__":
     poem = ""
     ballad = 0
-    roses = 0
-    sonnet = 1
+    roses = 1
+    sonnet = 0
 
     if ballad:
         rhythms = ballad_rhythmizer(basic=False)
@@ -160,7 +165,8 @@ if __name__ == "__main__":
         poem = main(
             poem_length=ROSES_LENGTH,
             rhythms=roses_rhythms,
-            lines=["roses are red",],
+            lines=["roses are red",
+                   "violets are blue"],
             rhyme_scheme="abcb",
         )
     elif sonnet:
